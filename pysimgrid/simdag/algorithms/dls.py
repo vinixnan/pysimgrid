@@ -142,6 +142,7 @@ class DLS(StaticScheduler):
         queue_tasks.add(task)
 
     expected_makespan = max([state["ect"] for state in state.task_states.values()])
+    self.state = state
     return state.schedule, expected_makespan
 
   @classmethod

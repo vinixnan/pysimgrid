@@ -346,6 +346,7 @@ class DynamicScheduler(Scheduler):
     super(DynamicScheduler, self).__init__(simulation)
     self.__scheduler_time = -1.
     self.__total_time = -1.
+    self.state = None
 
   def run(self):
     start_time = time.time()

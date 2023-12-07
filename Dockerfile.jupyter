@@ -1,0 +1,8 @@
+FROM vinixnan/pysimgrid
+
+RUN pip3 install JPype1 jupyter numpy seaborn scipy matplotlib pyNetLogo SALib
+
+EXPOSE 8888
+
+CMD ["python -m notebook --ip 0.0.0.0 --no-browser --allow-root"]
+     

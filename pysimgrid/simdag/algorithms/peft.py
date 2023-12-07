@@ -70,6 +70,7 @@ class PEFT(StaticScheduler):
       host, pos, start, finish = current_min.value
       state.update(task, host, pos, start, finish)
     expected_makespan = max([state["ect"] for state in state.task_states.values()])
+    self.state = state
     return state.schedule, expected_makespan
 
   @classmethod

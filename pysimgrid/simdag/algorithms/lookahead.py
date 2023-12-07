@@ -85,4 +85,5 @@ class Lookahead(scheduler.StaticScheduler):
     for task, task_state in state.task_states.items():
       task.data = {"ect": task_state["ect"]}
     expected_makespan = max([state["ect"] for state in state.task_states.values()])
+    self.state = state
     return state.schedule, expected_makespan
