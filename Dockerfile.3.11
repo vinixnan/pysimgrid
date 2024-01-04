@@ -1,0 +1,63 @@
+FROM debian:11-slim as debian11.py3.11
+
+RUN apt update -q && apt install -q build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev wget curl build-essential cmake libboost-context-dev libboost-program-options-dev libboost-filesystem-dev doxygen graphviz-dev libgraphviz-dev -y
+
+ADD https://www.python.org/ftp/python/3.11.3/Python-3.11.3.tgz Python-3.11.3.tgz
+RUN tar xzf Python-3.11.3.tgz
+RUN cd Python-3.11.3 && ./configure --enable-optimizations 
+RUN cd Python-3.11.3 && make altinstall
+RUN ln -s /usr/local/bin/python3.11 /usr/local/bin/python
+RUN ln -s /usr/local/bin/python3.11 /usr/local/bin/python3
+RUN ln -s /usr/local/bin/pip3.11 /usr/local/bin/pip
+RUN ln -s /usr/local/bin/pip3.11 /usr/local/bin/pip3
+RUN python -V 
+RUN pip
+
+
+FROM debian11.py3.11 as base
+
+ENV LATEST_VERSION v3_13
+ARG VERSION=${LATEST_VERSION}
+ARG URL=https://framagit.org/simgrid/simgrid/-/archive/${VERSION}/simgrid-${VERSION}.tar.gz
+
+ARG SCRIPT_DIR=/home/pysimgrid
+ARG OPT_ROOT=$SCRIPT_DIR/opt
+ARG PKG_ROOT=$OPT_ROOT/SimGrid
+
+RUN useradd -ms /bin/bash pysimgrid
+WORKDIR /home/pysimgrid/
+
+RUN mkdir -p $PKG_ROOT/src
+RUN wget -P  $PKG_ROOT/src $URL --no-check-certificate
+RUN cd $PKG_ROOT/src && tar xzf $PKG_ROOT/src/simgrid-${VERSION}.tar.gz
+
+
+RUN cd $PKG_ROOT/src/simgrid-${VERSION} && cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$PKG_ROOT .
+RUN cd $PKG_ROOT/src/simgrid-${VERSION} && make
+RUN cd $PKG_ROOT/src/simgrid-${VERSION} && make install
+
+COPY . $SCRIPT_DIR
+
+RUN pip install -r $SCRIPT_DIR/requirements.txt
+
+RUN cd $SCRIPT_DIR && python3 setup.py build_ext --inplace
+
+RUN cd $SCRIPT_DIR && python3 run_tests.py
+
+RUN chown -R pysimgrid /home/pysimgrid
+
+RUN chmod +x $SCRIPT_DIR/pysymgrid.py
+
+RUN ln -s $SCRIPT_DIR/pysymgrid.py /usr/local/bin/pysym
+
+RUN chown pysimgrid /usr/local/bin/pysym
+
+
+ 
+USER pysimgrid
+
+
+
+RUN python $SCRIPT_DIR/pysymgrid.py --conf test/data/pl_4hosts.xml -a BatchMax -p test/data/basic_graph.dot
+
+CMD ["bash"]

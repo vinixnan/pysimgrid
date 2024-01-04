@@ -1,0 +1,5 @@
+Cython==0.29.36
+numpy==1.26.3
+setuptools==69.0.3
+networkx==3.2.1
+click==8.1.3
