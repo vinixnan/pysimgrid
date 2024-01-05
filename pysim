@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/local/bin/python
 import click
 from pysimgrid import simdag
 import pysimgrid.simdag.algorithms as algorithms

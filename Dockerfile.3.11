@@ -46,18 +46,10 @@ RUN cd $SCRIPT_DIR && python3 run_tests.py
 
 RUN chown -R pysimgrid /home/pysimgrid
 
-RUN chmod +x $SCRIPT_DIR/pysymgrid.py
+RUN ln -s $SCRIPT_DIR/pysim /usr/local/bin/pysim
 
-RUN ln -s $SCRIPT_DIR/pysymgrid.py /usr/local/bin/pysym
-
-RUN chown pysimgrid /usr/local/bin/pysym
-
-
- 
 USER pysimgrid
 
-
-
-RUN python $SCRIPT_DIR/pysymgrid.py --conf test/data/pl_4hosts.xml -a BatchMax -p test/data/basic_graph.dot
+RUN pysim --conf test/data/pl_4hosts.xml -a BatchMax -p test/data/basic_graph.dot
 
 CMD ["bash"]
