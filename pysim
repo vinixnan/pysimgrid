@@ -2,8 +2,7 @@
 import click
 from pysimgrid import simdag
 import pysimgrid.simdag.algorithms as algorithms
-import networkx
-import sys
+import json
 
 import collections
 
@@ -11,21 +10,12 @@ collections.Mapping = collections.abc.Mapping
 
 collections.Sequence = collections.abc.Sequence
 
-algs=['BatchMax',
- 'BatchMin',
- 'BatchSufferage',
+algs=[
  'DLS',
- 'DynamicBatchMax',
- 'DynamicBatchMin',
- 'DynamicBatchSufferage',
- 'DynamicMCT',
  'HCPT',
  'HEFT',
  'Lookahead',
- 'MCT',
- 'OLB',
  'PEFT',
- 'RandomStatic',
  'RoundRobinStatic',
  'SimHEFT',]
 
@@ -48,13 +38,30 @@ def run(
     problem,
     alg,
 ):
+    returning_dict = {}
     with simdag.Simulation(conf, problem) as simulation:
       classdef = getattr(algorithms, alg)
       scheduler = classdef(simulation)
       scheduler.run()
-      print(simulation.clock, scheduler.scheduler_time, scheduler.total_time)
-    
+      returning_dict['makespan'] = simulation.clock
+      returning_dict['total_time'] = scheduler.total_time
+      returning_dict['tasks'] = format_output(simulation.tasks)
+      print(json.dumps(returning_dict))
 
+def format_output(tasks):
+    tasks_in_host = {}
+    for task in tasks:
+        target_host = task.hosts[0].name
+        el = {}
+        host = tasks_in_host.get(target_host, [])
+        el["target_host"] = target_host
+        el["name"] = task.name
+        el["start_time"] = task.start_time
+        el["finish_time"] = task.finish_time
+        el["kind"] = task.kind
+        host.append(el)
+        tasks_in_host[target_host] = host
+    return tasks_in_host
 
 if __name__ == "__main__":
     run()

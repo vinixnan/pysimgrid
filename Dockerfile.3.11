@@ -1,6 +1,6 @@
 FROM debian:11-slim as debian11.py3.11
 
-RUN apt update -q && apt install -q build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev wget curl build-essential cmake libboost-context-dev libboost-program-options-dev libboost-filesystem-dev doxygen graphviz-dev libgraphviz-dev -y
+RUN apt update -q && apt install -q nano build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev wget curl build-essential cmake libboost-context-dev libboost-program-options-dev libboost-filesystem-dev doxygen graphviz-dev libgraphviz-dev -y
 
 ADD https://www.python.org/ftp/python/3.11.3/Python-3.11.3.tgz Python-3.11.3.tgz
 RUN tar xzf Python-3.11.3.tgz
@@ -50,6 +50,6 @@ RUN ln -s $SCRIPT_DIR/pysim /usr/local/bin/pysim
 
 USER pysimgrid
 
-RUN pysim --conf test/data/pl_4hosts.xml -a BatchMax -p test/data/basic_graph.dot
+RUN pysim --conf test/data/pl_4hosts.xml -a HEFT -p test/data/basic_graph.dot
 
 CMD ["bash"]
