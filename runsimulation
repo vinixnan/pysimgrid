@@ -1,0 +1,92 @@
+#!/usr/local/bin/python
+import click
+from pysimgrid import simdag
+import pysimgrid.simdag.algorithms as algorithms
+import json
+
+import collections
+import networkx
+
+collections.Mapping = collections.abc.Mapping
+
+collections.Sequence = collections.abc.Sequence
+
+
+class ExecuteSimgrid(simdag.StaticScheduler):
+    def __init__(self, simulation, schedule):
+        super(ExecuteSimgrid, self).__init__(simulation)
+        self.schedule = schedule
+
+    def get_schedule(self, simulation):
+        return self.schedule
+
+
+def mount_schedule(task_in_host, simulation):
+    schedule = {host: [] for host in simulation.hosts}
+    host_names = {v.name: v for v in schedule.keys()}
+    graph = simulation.get_task_graph()
+    for task in networkx.topological_sort(graph):
+        host_name = task_in_host.get(task.name)
+        host = host_names[host_name]
+        if host:
+            schedule[host].append(task)
+
+    return schedule
+
+
+@click.command()
+@click.option(
+    "--hostconf",
+    help="Path for a XML File containing the host configuration",
+    required=True,
+)
+@click.option(
+    "--problem",
+    "-p",
+    help="Path for the problem definition (.dot file)",
+    required=True,
+)
+@click.option(
+    "--allocation",
+    "-a",
+    help="JSON Allocation file",
+    required=True,
+)
+def run(
+    hostconf,
+    problem,
+    allocation,
+):
+    returning_dict = {}
+    f = open(allocation)
+    allocation_dict = json.load(f)
+
+    with simdag.Simulation(hostconf, problem) as simulation:
+        schedule = mount_schedule(allocation_dict, simulation)
+        
+        scheduler = ExecuteSimgrid(simulation, schedule)
+        scheduler.run()
+        returning_dict["makespan"] = simulation.clock
+        returning_dict["total_time"] = scheduler.total_time
+        returning_dict["tasks"] = format_output(simulation.tasks)
+        print(json.dumps(returning_dict))
+
+
+def format_output(tasks):
+    tasks_in_host = {}
+    for task in tasks:
+        target_host = task.hosts[0].name
+        el = {}
+        host = tasks_in_host.get(target_host, [])
+        el["target_host"] = target_host
+        el["name"] = task.name
+        el["start_time"] = task.start_time
+        el["finish_time"] = task.finish_time
+        el["kind"] = task.kind
+        host.append(el)
+        tasks_in_host[target_host] = host
+    return tasks_in_host
+
+
+if __name__ == "__main__":
+    run()
