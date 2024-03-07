@@ -47,6 +47,7 @@ RUN cd $SCRIPT_DIR && python3 run_tests.py
 RUN chown -R pysimgrid /home/pysimgrid
 
 RUN ln -s $SCRIPT_DIR/pysim /usr/local/bin/pysim
+RUN ln -s $SCRIPT_DIR/runsimulation /usr/local/bin/runsimulation
 
 USER pysimgrid
 
